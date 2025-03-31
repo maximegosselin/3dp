@@ -1,3 +1,5 @@
+include <BOSL2/std.scad>
+
 $fn=32;
 
 monitor_x = 218;
@@ -10,29 +12,34 @@ cr_x = 61;
 cr_y = 96;
 cr_z = 19;
 thickness = 4;
-height = 50;
+height = 60;
 corner_radius = 2;
+gap = 0.2;
 
-module beelink() {
-    cube([bl_x, bl_y, bl_z], center=true);
-}
-
-module enclosure_base_shape() {
-    d = 2 * corner_radius;
-    minkowski() {
-        square([monitor_x - d, monitor_y - d], center=true);
-
-        circle(r=corner_radius);
-    }
-}
-
-module enclosure_walls() {
-    linear_extrude(height)
+module enclosure() {
     difference() {
-        enclosure_base_shape();
-        offset(r=-thickness)
-        enclosure_base_shape();
+        // outer walls
+        linear_extrude(height)
+        difference() {
+            shape_enclosure_base();
+            offset(r=-thickness)
+            shape_enclosure_base();
+        }
+        
+        // beelink hole
+        translate([-(monitor_x/2 - thickness/2),0,20])
+        rotate([90,0,90])
+        cuboid([80,22,thickness*2], rounding=corner_radius, edges="Z");
+        
+        // wires hole
+        translate([70,monitor_y/2 + thickness/2,30])
+        rotate([90,0,0])
+        cylinder(thickness*2, r=20);
     }
 }
-
-enclosure_walls();
+ 
+enclosure();
+ 
+module shape_enclosure_base() {
+    rect([monitor_x, monitor_y], rounding=corner_radius);
+}
